@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "polymedia",
+  "version": "${version}",
+  "name": "PolyMedia (PolyReplay + PolyClip)",
+  "description": "PolyReplay: record your gameplay with a keybind. PolyClip: save the last 30s / 1min / 10min as a clip.",
+  "authors": ["extraint"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [{ "adapter": "kotlin", "value": "org.polyfrost.polymedia.PolyMediaMod" }]
+  },
+  "mixins": ["polymedia.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "${mc}",
+    "fabric-api": "*",
+    "fabric-language-kotlin": "*",
+    "oneconfig": "*"
+  }
+}

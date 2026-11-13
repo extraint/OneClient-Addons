@@ -1,6 +1,12 @@
 # OneClient-Addons
 
-Addons for OneClient, written in Rust.
+Addons for OneClient.
+
+* **[`mod/`](mod/README.md)** - the in-game **PolyReplay** and **PolyClip** modules (Fabric,
+  Minecraft 26.1.x / 26.3, configured from OneConfig's Right Shift menu). **Start here.**
+* The Rust crate below is an earlier standalone version that records the whole desktop with
+  ffmpeg instead of the game's framebuffer. It is kept as a library/CLI but is not what the
+  in-game modules use.
 
 ## PolyReplay
 Press a keybind (default **F9**) to start recording your gameplay, press it again to stop.

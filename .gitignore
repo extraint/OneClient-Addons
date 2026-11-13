@@ -1,2 +1,5 @@
 target/
-Cargo.lock.bak
+mod/.gradle/
+mod/build/
+mod/.kotlin/
+*.class
