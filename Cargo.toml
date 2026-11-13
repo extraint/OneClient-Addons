@@ -1,0 +1,21 @@
+[package]
+name = "oneclient-addons"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "PolyReplay (gameplay recording) and PolyClip (instant replay clips) addons for OneClient"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+global-hotkey = { version = "0.6", optional = true }
+
+[features]
+# Global keybinds + the `oneclient-addons` CLI.
+hotkeys = ["dep:global-hotkey"]
+
+[[bin]]
+name = "oneclient-addons"
+path = "src/bin/addons.rs"
+required-features = ["hotkeys"]
