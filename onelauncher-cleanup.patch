@@ -1,0 +1,29 @@
+diff --git a/packages/oneclient_app/src/hooks/queries/player_profile.rs b/packages/oneclient_app/src/hooks/queries/player_profile.rs
+index ec19930..e0b15df 100644
+--- a/packages/oneclient_app/src/hooks/queries/player_profile.rs
++++ b/packages/oneclient_app/src/hooks/queries/player_profile.rs
+@@ -32,11 +32,6 @@ impl QueryCapability for FetchPlayerProfileQuery {
+                 .await?,
+         )
+     }
+-
+-    // TODO Cache
+-    // fn matches(&self, keys: &Self::Keys) -> bool {
+-    //     keys.uuid.as_deref().is_some_and(|id| !id.is_empty())
+-    // }
+ }
+ 
+ pub fn use_player_profile(
+diff --git a/packages/oneclient_cluster/src/screenshots/mod.rs b/packages/oneclient_cluster/src/screenshots/mod.rs
+index 328ba9e..ae3d12d 100644
+--- a/packages/oneclient_cluster/src/screenshots/mod.rs
++++ b/packages/oneclient_cluster/src/screenshots/mod.rs
+@@ -124,7 +124,7 @@ pub(crate) fn thumbnail(raw: &[u8], max_edge: u32) -> Option<Bytes> {
+ pub fn delete_screenshot(path: &Path) -> ClusterResult<()> {
+     let path = ensure_in_clusters(path)?;
+ 
+-    // TODO maybe async?
++    // Blocking; UI callers run this via `off_ui_blocking`.
+     match trash::delete(&path) {
+         Ok(()) => Ok(()),
+         Err(err) => Err(ScreenshotsError::Trash(err.to_string()).into()),
