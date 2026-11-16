@@ -8,6 +8,7 @@ import org.polyfrost.oneconfig.api.ui.v1.keybind.OneConfigKeybind
 import org.polyfrost.polymedia.core.AudioOptions
 import org.polyfrost.polymedia.core.CaptureSettings
 import org.polyfrost.polymedia.core.ClipLength
+import org.polyfrost.polymedia.core.Platform
 
 /** Shown in OneConfig's menu (Right Shift). */
 object PolyMediaConfig : KtConfig("polymedia.json", "PolyReplay & PolyClip", Config.Category.QOL) {
@@ -66,7 +67,7 @@ object PolyMediaConfig : KtConfig("polymedia.json", "PolyReplay & PolyClip", Con
     var micDevice: String by text("", "Microphone device", "Leave empty for the default (required on Windows/macOS).", CAPTURE)
 
     fun captureSettings() = CaptureSettings(
-        ffmpegPath = ffmpegPath.ifBlank { "ffmpeg" },
+        ffmpegPath = Platform.resolveFfmpeg(ffmpegPath),
         fps = fps.toInt().coerceIn(5, 120),
         bitrateKbps = bitrateKbps.toInt().coerceIn(500, 100_000),
         gameAudioDevice = gameAudioDevice.trim(),

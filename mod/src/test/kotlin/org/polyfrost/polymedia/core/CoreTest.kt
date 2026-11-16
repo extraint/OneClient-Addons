@@ -33,10 +33,32 @@ class CoreTest {
         assertFalse(a.any { "DEFAULT_MONITOR" in it })
     }
 
-    @Test fun windowsAndMacNeedMicDevice() {
-        for (os in listOf(Os.WINDOWS, Os.MAC)) {
-            assertFailsWith<FfmpegException> { FfmpegCommands.record(s, AudioOptions(false, true), 2, 2, Path.of("o.mp4"), os) }
-        }
+    @Test fun macUsesDefaultMicButNeedsLoopbackForGameAudio() {
+        val mic = FfmpegCommands.record(s, AudioOptions(false, true), 2, 2, Path.of("o.mp4"), Os.MAC)
+        assertTrue(has(mic, "-i", ":default"))
+        assertFailsWith<FfmpegException> { FfmpegCommands.record(s, AudioOptions(true, false), 2, 2, Path.of("o.mp4"), Os.MAC) }
+        val game = FfmpegCommands.record(s.copy(gameAudioDevice = "1"), AudioOptions(true, false), 2, 2, Path.of("o.mp4"), Os.MAC)
+        assertTrue(has(game, "-i", ":1"))
+    }
+
+    @Test fun macGameAudioIsDroppedWithWarningInsteadOfFailing() {
+        val (a, w) = Platform.usableAudio(AudioOptions(true, true), s, Os.MAC)
+        assertEquals(AudioOptions(false, true), a); assertNotNull(w)
+        assertEquals(AudioOptions(true, true) to null, Platform.usableAudio(AudioOptions(true, true), s.copy(gameAudioDevice = "2"), Os.MAC))
+        assertEquals(AudioOptions(true, false) to null, Platform.usableAudio(AudioOptions(true, false), s, Os.LINUX))
+    }
+
+    @Test fun ffmpegLocatorFindsHomebrewOnMac() {
+        assertEquals("/opt/homebrew/bin/ffmpeg", Platform.resolveFfmpeg("ffmpeg", Os.MAC) { it == "/opt/homebrew/bin/ffmpeg" })
+        assertEquals("/usr/local/bin/ffmpeg", Platform.resolveFfmpeg("", Os.MAC) { it == "/usr/local/bin/ffmpeg" })
+        assertEquals("ffmpeg", Platform.resolveFfmpeg("ffmpeg", Os.MAC) { false })
+        assertEquals("/custom/ffmpeg", Platform.resolveFfmpeg("/custom/ffmpeg", Os.MAC) { false })
+        assertEquals("ffmpeg", Platform.resolveFfmpeg("ffmpeg", Os.LINUX) { true })
+    }
+
+    @Test fun windowsNeedsMicDevice() {
+        val os = Os.WINDOWS
+        assertFailsWith<FfmpegException> { FfmpegCommands.record(s, AudioOptions(false, true), 2, 2, Path.of("o.mp4"), os) }
         val a = FfmpegCommands.record(s.copy(micDevice = "Mic"), AudioOptions(false, true), 2, 2, Path.of("o.mp4"), Os.WINDOWS)
         assertTrue(has(a, "-i", "audio=Mic"))
     }

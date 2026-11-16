@@ -8,8 +8,8 @@ import java.nio.file.Path
  *
  * Audio notes: Linux uses PulseAudio/PipeWire-pulse (game audio = default output monitor, works out
  * of the box). Windows needs a DirectShow loopback device for game audio (default
- * `virtual-audio-capturer`) and a named mic device. macOS needs a loopback device (e.g. BlackHole)
- * and device indices for both. Override with [CaptureSettings.gameAudioDevice]/[CaptureSettings.micDevice].
+ * `virtual-audio-capturer`) and a named mic device. macOS uses the default mic; game audio needs a
+ * loopback device (e.g. BlackHole) given as an avfoundation index. Override with [CaptureSettings.gameAudioDevice]/[CaptureSettings.micDevice].
  */
 object FfmpegCommands {
     const val SEGMENT_SECS = 5
@@ -33,7 +33,11 @@ object FfmpegCommands {
         Os.LINUX -> "@DEFAULT_MONITOR@"
     }
 
-    private fun micDefault(os: Os) = if (os == Os.LINUX) "@DEFAULT_SOURCE@" else null
+    private fun micDefault(os: Os) = when (os) {
+        Os.LINUX -> "@DEFAULT_SOURCE@"
+        Os.MAC -> "default" // avfoundation's default input
+        Os.WINDOWS -> null
+    }
 
     /** Input 0 is always the video pipe; audio inputs follow (game first, then mic). */
     private fun inputs(s: CaptureSettings, audio: AudioOptions, w: Int, h: Int, os: Os): Pair<List<String>, Int> {

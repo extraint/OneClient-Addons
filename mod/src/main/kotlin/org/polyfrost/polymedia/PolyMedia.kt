@@ -9,6 +9,7 @@ import org.lwjgl.system.MemoryUtil
 import org.polyfrost.polymedia.core.ClipRecorder
 import org.polyfrost.polymedia.core.Frame
 import org.polyfrost.polymedia.core.FramePool
+import org.polyfrost.polymedia.core.Platform
 import org.polyfrost.polymedia.core.ReplayRecorder
 import java.nio.file.Path
 import java.util.concurrent.Executors
@@ -108,10 +109,11 @@ object PolyMedia {
         if (replayToggleRequested.compareAndSet(true, false) && replayBusy.compareAndSet(false, true)) {
             val starting = !replay.active
             val settings = cfg.captureSettings()
-            val audio = cfg.replayAudio()
+            val (audio, warn) = Platform.usableAudio(cfg.replayAudio(), settings)
             worker.execute {
                 try {
                     if (starting) {
+                        warn?.let { say("§e[PolyReplay] $it") }
                         val f = replay.start(settings, audio, w, h)
                         say("§a[PolyReplay] Recording → ${f.fileName}")
                     } else {
@@ -127,7 +129,9 @@ object PolyMedia {
         replay.offer(frame)
 
         // PolyClip: keep the buffer running while enabled and in a world; restart on settings change.
-        val desired = ClipRecorder.Params(cfg.captureSettings(), cfg.clipAudio(), cfg.clipLength)
+        val clipSettings = cfg.captureSettings()
+        val (clipAudio, clipWarn) = Platform.usableAudio(cfg.clipAudio(), clipSettings)
+        val desired = ClipRecorder.Params(clipSettings, clipAudio, cfg.clipLength)
         if (!clipBusy.get()) {
             val running = clip.params
             when {
@@ -148,6 +152,7 @@ object PolyMedia {
                     if (clipBusy.compareAndSet(false, true)) worker.execute {
                         try {
                             clip.start(desired, w, h)
+                            clipWarn?.let { say("§e[PolyClip] $it") }
                         } catch (e: Exception) {
                             clipRetryAfterNanos = System.nanoTime() + 30_000_000_000L
                             say("§c[PolyClip] ${e.message}")

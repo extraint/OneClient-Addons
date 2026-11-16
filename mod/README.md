@@ -26,8 +26,12 @@ buffer never sits in RAM) and joins the newest ones without re-encoding when you
 * OneConfig, Fabric API and Fabric Language Kotlin.
 * Audio: **Linux** works out of the box (PulseAudio/PipeWire). **Windows** needs a DirectShow
   loopback device for game audio (default `virtual-audio-capturer`) and your mic's device name.
-  **macOS** needs a loopback device (e.g. BlackHole) and device indices. Set these under
-  *Capture* in the menu.
+  **macOS** records your microphone out of the box (grant the launcher Microphone access when
+  macOS asks), but has no built-in way to capture game audio: install a loopback device such as
+  BlackHole and enter its avfoundation index under *Capture -> Game audio device*
+  (`ffmpeg -f avfoundation -list_devices true -i ""` lists them). Until then it records without game
+  audio and tells you in chat. `brew install ffmpeg` works even when the launcher is started from
+  Launchpad (the common Homebrew locations are checked automatically).
 
 ## Building
 Needs JDK 25.
