@@ -88,7 +88,10 @@ class FrameEncoder private constructor(
             val p = try {
                 pb.start()
             } catch (e: java.io.IOException) {
-                throw FfmpegException("Could not start '$binary': ${e.message}. Install ffmpeg or set its path in the settings.")
+                throw FfmpegException(
+                    "Couldn't run ffmpeg ('$binary'). Install it (macOS: 'brew install ffmpeg'), then either restart the game " +
+                        "or paste the output of 'which ffmpeg' into PolyMedia > Capture > ffmpeg path.",
+                )
             }
             val enc = FrameEncoder(p, width, height, queueSize)
             Thread({

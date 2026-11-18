@@ -48,12 +48,28 @@ class CoreTest {
         assertEquals(AudioOptions(true, false) to null, Platform.usableAudio(AudioOptions(true, false), s, Os.LINUX))
     }
 
-    @Test fun ffmpegLocatorFindsHomebrewOnMac() {
-        assertEquals("/opt/homebrew/bin/ffmpeg", Platform.resolveFfmpeg("ffmpeg", Os.MAC) { it == "/opt/homebrew/bin/ffmpeg" })
-        assertEquals("/usr/local/bin/ffmpeg", Platform.resolveFfmpeg("", Os.MAC) { it == "/usr/local/bin/ffmpeg" })
-        assertEquals("ffmpeg", Platform.resolveFfmpeg("ffmpeg", Os.MAC) { false })
-        assertEquals("/custom/ffmpeg", Platform.resolveFfmpeg("/custom/ffmpeg", Os.MAC) { false })
-        assertEquals("ffmpeg", Platform.resolveFfmpeg("ffmpeg", Os.LINUX) { true })
+    @Test fun ffmpegLocator() {
+        Platform.clearCache()
+        val none = { null as String? }
+        assertEquals("/opt/homebrew/bin/ffmpeg", Platform.resolveFfmpeg("ffmpeg", Os.MAC, { it == "/opt/homebrew/bin/ffmpeg" }, none))
+        assertEquals("/custom/ffmpeg", Platform.resolveFfmpeg("/custom/ffmpeg", Os.MAC, { false }, none))
+        assertEquals("ffmpeg", Platform.resolveFfmpeg("ffmpeg", Os.WINDOWS, { true }, none))
+        assertEquals(System.getProperty("user.home") + "/bin/ffmpeg", Platform.resolveFfmpeg("~/bin/ffmpeg", Os.MAC, { false }, none))
+        val dir = Files.createTempDirectory("ff")
+        assertEquals(dir.resolve("ffmpeg").toString(), Platform.resolveFfmpeg(dir.toString(), Os.MAC, { false }, none))
+        dir.toFile().deleteRecursively()
+    }
+
+    @Test fun ffmpegLocatorFallsBackToLoginShell() {
+        // nothing in the usual places, but the login shell reports a path that exists
+        Platform.clearCache()
+        assertEquals("/weird/place/ffmpeg", Platform.resolveFfmpeg("ffmpeg", Os.LINUX, { it == "/weird/place/ffmpeg" }, { "/weird/place/ffmpeg" }))
+        // and the result is cached, so the shell isn't spawned every frame
+        assertEquals("/weird/place/ffmpeg", Platform.resolveFfmpeg("ffmpeg", Os.LINUX, { false }, { error("not called") }))
+        Platform.clearCache()
+        // a miss falls back to the bare name (system PATH)
+        assertEquals("ffmpeg", Platform.resolveFfmpeg("ffmpeg", Os.LINUX, { false }, { null }))
+        Platform.clearCache()
     }
 
     @Test fun windowsNeedsMicDevice() {

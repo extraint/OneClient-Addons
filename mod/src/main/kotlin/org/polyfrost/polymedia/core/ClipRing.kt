@@ -42,7 +42,7 @@ object ClipRing {
             if (!p.waitFor(60, TimeUnit.SECONDS)) { p.destroyForcibly(); throw FfmpegException("ffmpeg timed out while saving the clip") }
             if (p.exitValue() != 0) throw FfmpegException("ffmpeg failed: ${log.trim()}")
         } catch (e: IOException) {
-            throw FfmpegException("Could not start '$ffmpeg': ${e.message}")
+            throw FfmpegException("Couldn't run ffmpeg ('$ffmpeg'). Set its path in PolyMedia > Capture > ffmpeg path.")
         } finally {
             Files.deleteIfExists(list)
         }
